@@ -1,5 +1,10 @@
 # Caro Online
 
+Caro game is a close folk game with everyone especially students. Caro game originated from Japan with the name Gomoku.
+Caro can play on paper or simply draw land and use other colored stones to play so close to everyone.
+Caro is a game with simple rule. Whoever has 5 consecutive pieces is the winner.
+
+## How to run game
 run "server.py" -> run "game.py" -> run "game.py" -> play game !DONE
 
 ## Set up terminal run game
