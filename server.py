@@ -26,7 +26,12 @@ def handleClient(conn, addr):
     global data_list1, data_list2
 
     while True:
-        msg = conn.recv(1024).decode(FORMAT)
+        try:
+            msg = conn.recv(1024).decode(FORMAT)
+        except:
+            print('[CLOSE]', addr)
+            conn.close()
+            break
         msg = msg.split(" ")
         if msg[0] == 'USERNAME':
             if len(data_list1) <= len(data_list2):
