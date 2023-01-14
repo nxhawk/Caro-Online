@@ -7,6 +7,19 @@ data_list1 = []
 data_list2 = []
 
 
+def get_player2(conn):
+    player2 = None
+    if conn in data_list1:
+        index = data_list1.index(conn)
+        if index < len(data_list2):
+            player2 = data_list2[index]
+    else:
+        index = data_list2.index(conn)
+        if index < len(data_list1):
+            player2 = data_list1[index]
+    return player2
+
+
 def handleClient(conn, addr):
     # with every client side
     player2 = None
@@ -28,16 +41,17 @@ def handleClient(conn, addr):
             print('[CLOSE]', addr)
             conn.close()
             return
+        if (msg[0] == 'EXIT2'):
+            print('[CLOSE]', addr)
+            player2 = get_player2(conn)
+            if player2 is None:
+                return
+            # player2.sendall('EXIT2'.encode(FORMAT))
+            conn.close()
+            return
         if (msg[0] == 'TICK'):
             print(msg)
-            if conn in data_list1:
-                index = data_list1.index(conn)
-                if index < len(data_list2):
-                    player2 = data_list2[index]
-            else:
-                index = data_list2.index(conn)
-                if index < len(data_list1):
-                    player2 = data_list1[index]
+            player2 = get_player2(conn)
             if player2 is None:
                 return
             player2.sendall(f"TICK {msg[1]} {msg[2]} {msg[3]}".encode(FORMAT))
