@@ -3,6 +3,7 @@ from menu import Login
 import pygame
 import sys
 import socket
+import threading
 
 HOST = '127.0.0.1'
 SERVER_PORT = 65432
@@ -22,6 +23,7 @@ table = [[None]*SIZE_TABLE for _ in range(SIZE_TABLE)]
 
 player = None
 turned = None
+start_threading = None
 
 
 def draw_table():
@@ -50,7 +52,7 @@ def check_pos(pos):
 
 
 def tick_v(pos):
-    global w, client, turned
+    global w, client, turned, start_threading
     if turned == False:
         return
     x, y = check_pos(pos)
@@ -71,6 +73,7 @@ def tick_v(pos):
     msg = f"TICK {w} {x} {y}"
     client.sendall(msg.encode(FORMAT))
     turned = False
+    start_threading = True
 
 
 app = Login()
@@ -88,8 +91,17 @@ pygame.display.set_caption("Caro online")
 clock = pygame.time.Clock()
 
 
+def recv_mess():
+    global turned, client
+    msg = client.recv(1024).decode(FORMAT)
+    msg = msg.split(' ')
+    if (msg[0] == 'TICK'):
+        turned = True
+        table[int(msg[2])][int(msg[3])] = msg[1]
+
+
 def run_game():
-    global client, player, turned, w
+    global client, player, turned, w, start_threading
 
     ok = True
     while ok:
@@ -107,18 +119,16 @@ def run_game():
         pygame.display.update()
         clock.tick(30)
 
-        if (turned == False):
-            msg = client.recv(1024).decode(FORMAT)
-            msg = msg.split(' ')
-            if (msg[0] == 'TICK'):
-                turned = True
-                table[int(msg[2])][int(msg[3])] = msg[1]
+        if (turned == False and start_threading == True):
+            start_threading = False
+            thr = threading.Thread(target=recv_mess)
+            thr.start()
 
     client.close()
 
 
 def connect_server():
-    global client, turned, w
+    global client, turned, w, start_threading
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print('CLIENT SIDE')
     client.connect((HOST, SERVER_PORT))
@@ -129,9 +139,11 @@ def connect_server():
     if msg == 'PLAYER 1':
         turned = True
         w = 'X'
+        start_threading = False
     else:
         turned = False
         w = 'O'
+        start_threading = True
     run_game()
 
 
